@@ -38,7 +38,13 @@ cc.Class({
             default: null,
             type: cc.Label
         },
-
+        /*
+        // 开始按钮
+        btnPlay: {
+            default: null,
+            type: cc.Node
+        },
+        
         // 生命预置资源
         lifePrefab: {
             default: null,
@@ -46,29 +52,40 @@ cc.Class({
         },
         // 每局生命条数
         lifeNumber: 1,
+        */
     },
 
     onLoad () {
         // 获取地面y坐标
         this.groudY = this.groud.y + this.groud.height/2;
-        // 初始化得分
-        this.score = 0;
-        // 生成一个新的星星
-        this.spawnNewStar();
+        /*
+        // 初始化是否启动游戏
+        this.enabled = false;
+        */
+       // 初始化计时器
+       this.timer = 0;
+       this.starDuration = 0;
+       // 生成一个新的星星
+       this.spawnNewStar();
+       // 初始化得分
+       this.score = 0;
     },
-/*
+    /*
     // 点击游戏界面 play 按钮，开始游戏
     onStartGame: function () {
         // 初始化是否游戏中
-        this.start = true;
+        this.enabled = true;
         // 将按钮放在屏幕外看不到的地方
-        this.button.x = 3000;
-        // 初始化得分
-        this.score = 0;
+        this.btnPlay.x = 3000;
+        // 初始化计时器
+        this.timer = 0;
+        this.starDuration = 0;
         // 生成一个新的星星
         this.spawnNewStar();
+        // 初始化得分
+        this.score = 0;
     },
-*/
+    */
     spawnNewStar: function () {
         // 用星星预置资源在场景中生成一个新的节点
         var newStar = cc.instantiate(this.starPrefab);
@@ -78,6 +95,9 @@ cc.Class({
         newStar.setPosition(this.getNewStarPosition());
         // 在星星组件上暂存 Game 对象的引用
         newStar.getComponent('Star').game = this;
+        // 星星持续时间取个随机值，重置计时器
+        this.starDuration = this.minStarDuration + Math.random() * (this.maxStarDuration - this.minStarDuration);
+        this.timer = 0;
     },
 
     getNewStarPosition: function () {
@@ -96,7 +116,12 @@ cc.Class({
     },
 
     update (dt) {
-        // 更新得分
+        // 每帧更新计时器，超过星星持续时间还未生成新节点，则游戏失败
+        if (this.timer > this.starDuration) {
+            this.gameOver();
+            return;
+        }
+        this.timer += dt;
     },
 
     gainScore: function () {
@@ -104,5 +129,21 @@ cc.Class({
         this.score += 1;
         // 更新得分显示
         this.scoreDisplay.string = 'Score: ' + this.score;
+    },
+
+    gameOver: function () {
+        // 游戏失败，停止节点动作，重新加载场景
+        this.player.stopAllActions();
+        cc.director.loadScene('game');
+    },
+   
+
+    gameOver: function () {
+        this.gameOverNode.active = true;
+        this.player.enabled = false;
+        this.player.stopMove();
+        this.currentStar.destroy();
+        this.btnNode.x = 0;
     }
+    
 });

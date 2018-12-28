@@ -48,5 +48,10 @@ cc.Class({
             this.onPicked();
             return;
         }
+        
+        // 根据 Game 脚本中的计时器更新星星的透明度
+        var opacityRatio = 1 - this.game.timer/this.game.starDuration;
+        var minOpacity = 50;
+        this.node.opacity = minOpacity + Math.floor(opacityRatio * (255 - minOpacity));
     },
 });
